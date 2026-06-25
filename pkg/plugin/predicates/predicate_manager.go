@@ -53,7 +53,7 @@ type PredicateManager interface {
 	Filter(pod *v1.Pod, node *framework.NodeInfo, cycleState *framework.CycleState, allocate bool) (plugin string, error error)
 	// PreemptionPredicates checks if a pod can be scheduled on the node by preempting victims.
 	// Returns the victim index that allows the pod to fit, or -1 if none.
-	PreemptionPredicates(pod *v1.Pod, node *framework.NodeInfo, victims []*v1.Pod, startIndex int) (index int)
+	PreemptionFilter(pod *v1.Pod, node *framework.NodeInfo, cycleState *framework.CycleState, victims []*v1.Pod, startIndex int) (index int)
 }
 
 var _ PredicateManager = &predicateManagerImpl{}
@@ -133,21 +133,8 @@ func buildClusterEvents(actionMap map[fwk.EventResource]fwk.ActionType, queueing
 	return events
 }
 
-func (p *predicateManagerImpl) PreemptionPredicates(pod *v1.Pod, node *framework.NodeInfo, victims []*v1.Pod, startIndex int) int {
+func (p *predicateManagerImpl) PreemptionFilter(pod *v1.Pod, node *framework.NodeInfo, cycleState *framework.CycleState, victims []*v1.Pod, startIndex int) int {
 	ctx := context.Background()
-	state := framework.NewCycleState()
-
-	// run prefilter checks as pod cannot be scheduled otherwise
-	s, plugin, _ := p.runPreFilterPlugins(ctx, state, *p.allocationPreFilters, pod)
-	if !s.IsSuccess() && !s.IsSkip() {
-		// prefilter check failed, log and return
-		log.Log(log.ShimPredicates).Debug("PreFilter check failed during preemption check",
-			zap.String("podUID", string(pod.UID)),
-			zap.String("plugin", plugin),
-			zap.String("message", s.Message()))
-
-		return -1
-	}
 
 	// clone node so that we can modify it here for predicate checks
 	preemptingNode := node.Snapshot()
@@ -160,7 +147,7 @@ func (p *predicateManagerImpl) PreemptionPredicates(pod *v1.Pod, node *framework
 	// loop through remaining pods
 	for i := startIndex; i < len(victims); i++ {
 		p.removePodFromNodeNoFail(preemptingNode, victims[i])
-		status, _ := p.runFilterPlugins(ctx, *p.allocationFilters, state, pod, preemptingNode)
+		status, _ := p.runFilterPlugins(ctx, *p.allocationFilters, cycleState, pod, preemptingNode)
 		if status.IsSuccess() {
 			return i
 		}
@@ -261,6 +248,7 @@ func (p *predicateManagerImpl) runFilterPlugins(ctx context.Context, plugins []f
 	skipPlugins := cycleState.GetSkipFilterPlugins()
 	for _, pl := range plugins {
 		plugin := pl.Name()
+
 		// skip plugin if prefilter returned skip
 		if skipPlugins.Has(plugin) {
 			continue
