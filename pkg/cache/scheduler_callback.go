@@ -40,8 +40,7 @@ type AsyncRMCallback struct {
 }
 
 func (callback *AsyncRMCallback) PreFilterPredicates(args *si.PreFilterPredicatesArgs) *si.PreFilterPredicatesResponse {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 var _ api.ResourceManagerCallback = &AsyncRMCallback{}
@@ -218,18 +217,6 @@ func (callback *AsyncRMCallback) PreemptionPredicates(args *si.PreemptionPredica
 		Success: ok,
 		Index:   int32(index), //nolint:gosec
 	}
-}
-
-func (callback *AsyncRMCallback) Reserve(args *si.BindingArgs) *si.BindingResponse {
-	return callback.context.Reserve(args.AllocationKey, args.NodeID)
-}
-
-func (callback *AsyncRMCallback) PreBind(args *si.BindingArgs) *si.BindingResponse {
-	return callback.context.PreBind(args.AllocationKey, args.NodeID)
-}
-
-func (callback *AsyncRMCallback) Unreserve(args *si.BindingArgs) *si.BindingResponse {
-	return callback.context.Unreserve(args.AllocationKey, args.NodeID)
 }
 
 func (callback *AsyncRMCallback) SendEvent(eventRecords []*si.EventRecord) {
