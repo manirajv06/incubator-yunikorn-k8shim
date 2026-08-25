@@ -97,6 +97,9 @@ func (callback *AsyncRMCallback) UpdateAllocation(response *si.AllocationRespons
 			if wait.Interrupted(err) && lastErr != nil {
 				err = lastErr
 			}
+
+			// delete the cycle state
+			task.context.schedulerCache.DeleteCycleState(task.GetTaskPod())
 			if task.IsPlaceholder() {
 				// Placeholder tasks do not have volume bindings, so AssumePod failure
 				// is unexpected and unrecoverable; wrap the error with context.
@@ -111,6 +114,10 @@ func (callback *AsyncRMCallback) UpdateAllocation(response *si.AllocationRespons
 		if utils.IsAssignedPod(task.GetTaskPod()) {
 			// task is already bound, fixup state and continue
 			task.MarkPreviouslyAllocated(alloc.AllocationKey, alloc.NodeID)
+
+			// delete the cycle state
+			task.context.schedulerCache.DeleteCycleState(task.GetTaskPod())
+
 		} else {
 			ev := NewAllocateTaskEvent(alloc.ApplicationID, task.taskID, alloc.AllocationKey, alloc.NodeID)
 			dispatcher.Dispatch(ev)

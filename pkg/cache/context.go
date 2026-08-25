@@ -752,9 +752,8 @@ func (ctx *Context) IsPodFitNode(name, node string, allocate bool) error {
 		return ErrorCycleStateNotFound
 	}
 	plugin, err := ctx.predManager.Filter(pod, targetNode, cycleState, allocate)
-	if err == nil {
+	if err != nil {
 		ctx.schedulerCache.DeleteCycleState(pod)
-	} else {
 		err = errors.Join(fmt.Errorf("failed plugin: '%s'", plugin), err)
 	}
 	return err
@@ -779,9 +778,9 @@ func (ctx *Context) IsPodFitNodeViaPreemption(name, node string, allocations []s
 
 				// check predicates for a match
 				if index := ctx.predManager.PreemptionFilter(pod, targetNode, cycleState, victims, startIndex); index != -1 {
-					ctx.schedulerCache.DeleteCycleState(pod)
 					return index, true
 				}
+				ctx.schedulerCache.DeleteCycleState(pod)
 			}
 		}
 	}

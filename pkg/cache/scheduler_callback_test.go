@@ -602,7 +602,7 @@ func TestPredicates(t *testing.T) {
 		Name: taskUID1,
 		UID:  taskUID1,
 	},
-	}) == nil)
+	}) != nil)
 }
 
 func TestPreemptionPredicates(t *testing.T) {
@@ -644,7 +644,7 @@ func TestPreemptionPredicates(t *testing.T) {
 		Name: taskUID1,
 		UID:  taskUID1,
 	},
-	}) == nil)
+	}) != nil)
 }
 
 func TestSendEvent(t *testing.T) {
