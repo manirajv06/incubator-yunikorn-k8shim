@@ -710,15 +710,15 @@ var _ predicates.PredicateManager = &mockPredicateManager{}
 
 type mockPredicateManager struct{}
 
-func (m *mockPredicateManager) PreFilter(_ *v1.Pod, _ bool) (feasibleNodes map[string]*si.Empty, cycleState *framework.CycleState, error error) {
+func (m *mockPredicateManager) PreFilter(_ *v1.Pod, _ bool) (map[string]*si.Empty, *framework.CycleState, error) {
 	return map[string]*si.Empty{}, framework.NewCycleState(), nil
 }
 
-func (m *mockPredicateManager) Filter(_ *v1.Pod, _ *framework.NodeInfo, _ *framework.CycleState, _ bool) (plugin string, error error) {
+func (m *mockPredicateManager) Filter(_ *v1.Pod, _ *framework.NodeInfo, _ *framework.CycleState, _ bool) (string, error) {
 	return "", nil
 }
 
-func (m *mockPredicateManager) PreemptionFilter(_ *v1.Pod, _ *framework.NodeInfo, _ *framework.CycleState, _ []*v1.Pod, _ int) (index int) {
+func (m *mockPredicateManager) PreemptionFilter(_ *v1.Pod, _ *framework.NodeInfo, _ *framework.CycleState, _ []*v1.Pod, _ int) int {
 	return 0
 }
 

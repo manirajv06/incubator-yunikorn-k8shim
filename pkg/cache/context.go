@@ -719,7 +719,7 @@ func (ctx *Context) PreFilter(name string, allocate bool) *si.PreFilterPredicate
 	defer ctx.schedulerCache.UnlockForWrites()
 	feasibleNodes, cycleState, err := ctx.predManager.PreFilter(pod, allocate)
 	if err == nil {
-		ctx.schedulerCache.UpdateCycleState(pod, cycleState)
+		ctx.schedulerCache.StoreCycleState(pod, cycleState)
 		return &si.PreFilterPredicatesResponse{
 			FeasibleNodes: feasibleNodes,
 			Success:       true,

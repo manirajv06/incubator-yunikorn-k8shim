@@ -222,7 +222,6 @@ func (cache *SchedulerCache) removeNode(node *v1.Node) (*v1.Node, []*v1.Pod) {
 		revert := cache.isAssumedPod(key)
 		delete(cache.assignedPods, key)
 		delete(cache.assumedPods, key)
-		delete(cache.podsCycleState, key)
 		if revert {
 			// the assumed node is gone before the bind completed, revert the assignment instead of
 			// orphaning the pod: an orphan is adopted again when the node comes back and the pod
@@ -624,7 +623,7 @@ func (cache *SchedulerCache) GetCycleState(pod *v1.Pod) *framework.CycleState {
 	return cache.podsCycleState[string(pod.UID)]
 }
 
-func (cache *SchedulerCache) UpdateCycleState(pod *v1.Pod, cycleState *framework.CycleState) {
+func (cache *SchedulerCache) StoreCycleState(pod *v1.Pod, cycleState *framework.CycleState) {
 	if pod == nil {
 		return
 	}
