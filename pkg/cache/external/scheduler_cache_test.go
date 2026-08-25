@@ -1323,39 +1323,3 @@ func TestRemoveNodeWithBoundPod(t *testing.T) {
 	// nolint:staticcheck
 	assert.Equal(t, len(cache.GetNode(host1).Pods), 1, "adopted pod is not added to the node")
 }
-
-// newTestNode returns a node with a name of host1 and enough capacity for the test pods
-func newTestNode() *v1.Node {
-	resourceList := make(map[v1.ResourceName]resource.Quantity)
-	resourceList[v1.ResourceName("memory")] = *resource.NewQuantity(1024*1000*1000, resource.DecimalSI)
-	resourceList[v1.ResourceName("cpu")] = *resource.NewQuantity(10, resource.DecimalSI)
-	return &v1.Node{
-		ObjectMeta: apis.ObjectMeta{
-			Name:      host1,
-			Namespace: "default",
-			UID:       nodeUID1,
-		},
-		Status: v1.NodeStatus{
-			Allocatable: resourceList,
-		},
-		Spec: v1.NodeSpec{
-			Unschedulable: false,
-		},
-	}
-}
-
-// newTestPod returns an unassigned pod with a name of podName1
-func newTestPod() *v1.Pod {
-	return &v1.Pod{
-		TypeMeta: apis.TypeMeta{
-			Kind:       "Pod",
-			APIVersion: "v1",
-		},
-		ObjectMeta: apis.ObjectMeta{
-			Name:      podName1,
-			Namespace: "default",
-			UID:       podUID1,
-		},
-		Spec: v1.PodSpec{},
-	}
-}
