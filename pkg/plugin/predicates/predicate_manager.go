@@ -42,7 +42,6 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/apache/yunikorn-k8shim/pkg/log"
-
 	"github.com/apache/yunikorn-scheduler-interface/lib/go/si"
 )
 
@@ -186,7 +185,7 @@ func (p *predicateManagerImpl) PreFilter(pod *v1.Pod, allocate bool) (map[string
 		status, feasibleNodes = p.runPreFilterPlugins(ctx, cycleState, *p.reservationPreFilters, pod)
 	}
 	if !status.IsSuccess() && !status.IsSkip() {
-		return map[string]*si.Empty{}, cycleState, errors.New(status.Message())
+		return map[string]*si.Empty{}, nil, errors.New(status.Message())
 	}
 	return feasibleNodes, cycleState, nil
 }

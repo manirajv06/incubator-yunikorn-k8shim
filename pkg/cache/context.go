@@ -715,11 +715,13 @@ func (ctx *Context) PreFilter(name string, allocate bool) *si.PreFilterPredicate
 	}
 	// if pod exists in cache, try to run predicates
 	// need to lock cache here as predicates need a stable view into the cache
-	ctx.schedulerCache.LockForWrites()
-	defer ctx.schedulerCache.UnlockForWrites()
+	ctx.schedulerCache.LockForReads()
 	feasibleNodes, cycleState, err := ctx.predManager.PreFilter(pod, allocate)
+	ctx.schedulerCache.UnlockForReads()
 	if err == nil {
+		ctx.schedulerCache.LockForWrites()
 		ctx.schedulerCache.StoreCycleState(pod, cycleState)
+		ctx.schedulerCache.UnlockForWrites()
 		return &si.PreFilterPredicatesResponse{
 			FeasibleNodes: feasibleNodes,
 			Success:       true,
@@ -766,6 +768,7 @@ func (ctx *Context) IsPodFitNodeViaPreemption(name, node string, allocations []s
 		if targetNode := ctx.schedulerCache.GetNode(node); targetNode != nil {
 			// need to lock cache here as predicates need a stable view into the cache
 			ctx.schedulerCache.LockForReads()
+			defer ctx.schedulerCache.UnlockForReads()
 			if cycleState := ctx.schedulerCache.GetCycleState(pod); cycleState != nil {
 				// look up each victim in the scheduler cache
 				victims := make([]*v1.Pod, len(allocations))
@@ -779,8 +782,6 @@ func (ctx *Context) IsPodFitNodeViaPreemption(name, node string, allocations []s
 					return index, true
 				}
 			}
-			ctx.schedulerCache.UnlockForReads()
-			ctx.schedulerCache.DeleteCycleState(pod)
 		}
 	}
 	return -1, false
