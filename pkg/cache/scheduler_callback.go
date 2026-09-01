@@ -97,7 +97,6 @@ func (callback *AsyncRMCallback) UpdateAllocation(response *si.AllocationRespons
 			if wait.Interrupted(err) && lastErr != nil {
 				err = lastErr
 			}
-			
 			// delete the cycle state
 			callback.context.schedulerCache.DeleteCycleState(task.GetTaskPod())
 			if task.IsPlaceholder() {
