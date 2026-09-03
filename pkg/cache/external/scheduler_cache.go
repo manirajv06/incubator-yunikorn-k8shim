@@ -624,6 +624,8 @@ func (cache *SchedulerCache) GetCycleState(pod *v1.Pod) *framework.CycleState {
 }
 
 func (cache *SchedulerCache) StoreCycleState(pod *v1.Pod, cycleState *framework.CycleState) {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
 	if pod == nil {
 		return
 	}
